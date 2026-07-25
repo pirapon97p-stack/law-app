@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังประมวลกฎหมายอาญา - แยกหมวดหมู่</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 15px; color: #1c1e21; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 15px; }
+        .header h1 { color: #1a365d; font-size: 20px; margin: 5px 0; }
+        .stats { font-size: 13px; color: #4a5568; }
+        
+        .filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .select-box, .search-box { 
+            width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; 
+            font-size: 15px; outline: none; background: white;
+        }
+        .select-box:focus, .search-box:focus { border-color: #3182ce; }
+
+        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        .btn { 
+            flex: 1; background: #3182ce; color: white; border: none; padding: 12px; 
+            border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; 
+        }
+        .btn-secondary { background: #4a5568; }
+        .btn:active { opacity: 0.8; }
+
+        .card { background: white; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .category-path { font-size: 11px; color: #718096; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; }
+        .badge { display: inline-block; background: #ebf8ff; color: #2b6cb0; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; }
+        .title { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #2d3748; }
+        .content { font-size: 14px; line-height: 1.6; color: #4a5568; white-space: pre-line; }
+        
+        .toggle-btn { background: #edf2f7; color: #2d3748; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .elements { background: #f7fafc; border-left: 3px solid #3182ce; padding: 10px; margin-top: 8px; font-size: 13px; color: #2d3748; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>⚖️ ประมวลกฎหมายอาญา</h1>
+        <div class="stats" id="totalCount">กำลังโหลด...</div>
+    </div>
+    
+    <div class="filter-group">
+        <select id="bookFilter" class="select-box" onchange="filterCards()">
+            <option value="ALL">-- แสดงทุกภาค --</option>
+            <option value="ภาค 1 บทบัญญัติทั่วไป">ภาค 1 บทบัญญัติทั่วไป</option>
+            <option value="ภาค 2 ความผิด">ภาค 2 ความผิด</option>
+            <option value="ภาค 3 ลหุโทษ">ภาค 3 ลหุโทษ</option>
+        </select>
+
+        <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาเลขมาตรา, ชื่อเรื่อง หรือคีย์เวิร์ด..." onkeyup="filterCards()">
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="getRandomCard()">🎲 สุ่มมาตรา (ตามภาคที่เลือก)</button>
+        <button class="btn btn-secondary" onclick="resetFilters()">🔄 ล้างการค้นหา</button>
+    </div>
+
+    <div id="cardContainer"></div>
+</div>
+
+<script src="lawData.js"></script>
+
+<script>
+    document.getElementById('totalCount').innerText = `รวมทั้งหมด ${lawData.length} มาตรา`;
+
+    function renderCards(data) {
+        const container = document.getElementById('cardContainer');
+        container.innerHTML = '';
+        
+        if(data.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#718096;">ไม่พบมาตราที่ตรงตามเงื่อนไข</div>';
+            return;
+        }
+
+        data.forEach((item, index) => {
+            container.innerHTML += `
+                <div class="card">
+                    <div class="category-path">${item.book} ➔ ${item.title_group} ➔ ${item.chapter}</div>
+                    <span class="badge">มาตรา ${item.section}</span>
+                    <div class="title">${item.title}</div>
+                    <div class="content">${item.text}</div>
+                    ${item.elements ? `
+                        <button class="toggle-btn" onclick="toggleElements(${index})">👁️ แสดง/ซ่อน องค์ประกอบความผิด</button>
+                        <div class="elements" id="elem-${index}">${item.elements}</div>
+                    ` : ''}
+                </div>
+            `;
+        });
+    }
+
+    function toggleElements(id) {
+        const el = document.getElementById(`elem-${id}`);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function filterCards() {
+        const selectedBook = document.getElementById('bookFilter').value;
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+
+        const filtered = lawData.filter(item => {
+            const matchBook = (selectedBook === 'ALL') || (item.book === selectedBook);
+            const matchQuery = !query || (
+                item.section.toString().includes(query) || 
+                item.title.toLowerCase().includes(query) ||
+                item.text.toLowerCase().includes(query) ||
+                (item.elements && item.elements.toLowerCase().includes(query)) ||
+                item.title_group.toLowerCase().includes(query) ||
+                item.chapter.toLowerCase().includes(query)
+            );
+            return matchBook && matchQuery;
+        });
+
+        renderCards(filtered);
+    }
+
+    function getRandomCard() {
+        const selectedBook = document.getElementById('bookFilter').value;
+        let pool = lawData;
+        if (selectedBook !== 'ALL') {
+            pool = lawData.filter(item => item.book === selectedBook);
+        }
+        
+        if (pool.length === 0) {
+            alert('ไม่พบมาตราในภาคที่เลือก');
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        renderCards([pool[randomIndex]]);
+    }
+
+    function resetFilters() {
+        document.getElementById('bookFilter').value = 'ALL';
+        document.getElementById('searchInput').value = '';
+        renderCards(lawData);
+    }
+
+    renderCards(lawData);
+</script>
+
+</body>
+</html>
