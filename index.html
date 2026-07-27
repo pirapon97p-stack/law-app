@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ประมวลกฎหมายอาญา</title>
+    <title>คลังประมวลกฎหมาย</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -20,6 +20,59 @@
             max-width: 800px;
             margin: 0 auto;
             text-align: center;
+        }
+        /* เมนูหน้าแรกเลือกวิชา */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .category-card {
+            background: white;
+            padding: 25px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        .category-card:active {
+            transform: scale(0.98);
+            background-color: #f1f5f9;
+        }
+        .category-card h3 {
+            margin: 10px 0 5px 0;
+            color: #1e3a8a;
+            font-size: 1.2rem;
+        }
+        .category-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .category-icon {
+            font-size: 2.5rem;
+        }
+
+        /* ส่วนของหน้าค้นหาและเนื้อหา */
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .btn-back {
+            background: #e2e8f0;
+            color: #1e293b;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
         }
         .controls {
             display: flex;
@@ -62,7 +115,6 @@
             color: #1e3a8a;
             font-size: 1.25rem;
         }
-        /* กำหนดการเว้นระยะย่อหน้าสำหรับเนื้อหากฎหมาย */
         .card-text {
             line-height: 1.8;
             font-size: 1.05rem;
@@ -71,7 +123,7 @@
         .card-text p {
             margin: 8px 0;
             text-align: justify;
-            text-indent: 2.5em; /* ดันย่อหน้าเข้าไป 2.5 ช่วงตัวอักษร */
+            text-indent: 2.5em;
         }
         .card-elements p {
             margin: 6px 0;
@@ -88,29 +140,66 @@
 <body>
 
     <div class="container">
-        <h2>⚖️ ประมวลกฎหมายอาญา</h2>
         
-        <div id="loading">กำลังโหลด...</div>
-
-        <div id="app-content" style="display: none;">
-            <div class="controls">
-                <select id="bookFilter">
-                    <option value="">-- แสดงทุกภาค --</option>
-                    <option value="ภาค 1 บทบัญญัติทั่วไป">ภาค 1 บทบัญญัติทั่วไป</option>
-                </select>
-
-                <input type="text" id="searchInput" placeholder="ค้นหาเลขมาตรา, ชื่อเรื่อง หรือคีย์เวิร์ด...">
-
-                <div class="btn-group">
-                    <button class="btn-primary" id="btnRandom">🎲 สุ่มมาตรา (ตามภาคที่เลือก)</button>
-                    <button class="btn-secondary" id="btnClear">🔄 ล้างการค้นหา</button>
+        <!-- หน้าที่ 1: หน้าเลือกหมวดหมู่กฎหมาย -->
+        <div id="category-screen">
+            <h2>⚖️ คลังประมวลกฎหมาย</h2>
+            <p style="color: #64748b;">กรุณาเลือกหมวดหมู่กฎหมายที่ต้องการศึกษา</p>
+            
+            <div class="category-grid">
+                <div class="category-card" onclick="selectCategory('อาญา')">
+                    <div class="category-icon">📕</div>
+                    <h3>กฎหมายอาญา</h3>
+                    <p>ประมวลกฎหมายอาญา</p>
+                </div>
+                <div class="category-card" onclick="selectCategory('วิ.อาญา')">
+                    <div class="category-icon">📙</div>
+                    <h3>วิธีพิจารณาความอาญา</h3>
+                    <p>ประมวลกฎหมายวิธีพิจารณาความอาญา</p>
+                </div>
+                <div class="category-card" onclick="selectCategory('แพ่ง')">
+                    <div class="category-icon">📘</div>
+                    <h3>กฎหมายแพ่งและพาณิชย์</h3>
+                    <p>ประมวลกฎหมายแพ่งและพาณิชย์</p>
+                </div>
+                <div class="category-card" onclick="selectCategory('วิ.แพ่ง')">
+                    <div class="category-icon">📗</div>
+                    <h3>วิธีพิจารณาความแพ่งและพาณิชย์</h3>
+                    <p>ประมวลกฎหมายวิธีพิจารณาความแพ่ง</p>
                 </div>
             </div>
-
-            <div id="lawList"></div>
         </div>
+
+        <!-- หน้าที่ 2: หน้าค้นหาและแสดงผลเนื้อหา (จะซ่อนอยู่ก่อน) -->
+        <div id="app-screen" style="display: none;">
+            <div class="header-bar">
+                <button class="btn-back" onclick="showCategoryScreen()">⬅️ เปลี่ยนวิชา</button>
+                <h3 id="currentLawTitle" style="margin: 0; color: #1e3a8a;">ประมวลกฎหมาย</h3>
+            </div>
+
+            <div id="loading">กำลังโหลด...</div>
+
+            <div id="app-content" style="display: none;">
+                <div class="controls">
+                    <select id="bookFilter">
+                        <option value="">-- แสดงทุกภาค/ลักษณะ --</option>
+                    </select>
+
+                    <input type="text" id="searchInput" placeholder="ค้นหาเลขมาตรา, ชื่อเรื่อง หรือคีย์เวิร์ด...">
+
+                    <div class="btn-group">
+                        <button class="btn-primary" id="btnRandom">🎲 สุ่มมาตรา</button>
+                        <button class="btn-secondary" id="btnClear">🔄 ล้างการค้นหา</button>
+                    </div>
+                </div>
+
+                <div id="lawList"></div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- ไฟล์ข้อมูลกฎหมาย (สามารถนำไฟล์กฎหมายวิชาอื่นมาสคริปต์เพิ่มตรงนี้ได้ในอนาคต) -->
     <script src="lawData.js"></script>
     <script src="script.js"></script>
 </body>
