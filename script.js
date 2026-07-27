@@ -7,21 +7,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnRandom = document.getElementById('btnRandom');
     const btnClear = document.getElementById('btnClear');
 
-    // ฟังก์ชันตรวจสอบและเริ่มดึงข้อมูล
     function init() {
         if (window.lawData && window.lawData.length > 0) {
-            // โหลดสำเร็จ ให้ซ่อนคำว่ากำลังโหลด แล้วแสดงส่วนเนื้อหา
             if (loadingEl) loadingEl.style.display = 'none';
             if (appContent) appContent.style.display = 'block';
-
             renderLaws(window.lawData);
         } else {
-            // หากข้อมูลยังไม่มา ให้ลองอีกครั้งใน 100ms
             setTimeout(init, 100);
         }
     }
 
-    // ฟังก์ชันแสดงผลรายการมาตรา
+    // ฟังก์ชันช่วยตัดแต่งและใส่แท็ก <p> เพื่อสร้างย่อหน้า
+    function formatParagraphs(text) {
+        if (!text) return '';
+        return text
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => `<p>${line}</p>`)
+            .join('');
+    }
+
     function renderLaws(data) {
         lawListEl.innerHTML = '';
 
@@ -33,17 +39,27 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
+            
+            const formattedText = formatParagraphs(item.text);
+            const formattedElements = formatParagraphs(item.elements);
+
             card.innerHTML = `
-                <small style="color: #64748b;">${item.book} > ${item.chapter}</small>
+                <small style="color: #64748b; font-weight: 500;">${item.book} > ${item.chapter}</small>
                 <h3>มาตรา ${item.section} : ${item.title}</h3>
-                <div class="card-text">${item.text}</div>
-                ${item.elements ? `<div class="card-elements"><strong>องค์ประกอบ / สาระสำคัญ:</strong>\n${item.elements}</div>` : ''}
+                <div class="card-text">${formattedText}</div>
+                ${item.elements ? `
+                    <details style="margin-top: 15px;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #1e3a8a; padding: 5px 0;">👁️ แสดง/ซ่อน องค์ประกอบความผิด</summary>
+                        <div class="card-elements" style="margin-top: 10px; padding: 12px 15px; background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                            ${formattedElements}
+                        </div>
+                    </details>
+                ` : ''}
             `;
             lawListEl.appendChild(card);
         });
     }
 
-    // ระบบค้นหาข้อมูล (Search & Filter)
     function filterData() {
         const keyword = searchInput.value.trim().toLowerCase();
         const selectedBook = bookFilter.value;
@@ -62,30 +78,30 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLaws(filtered);
     }
 
-    // Event Listeners
-    searchInput.addEventListener('input', filterData);
-    bookFilter.addEventListener('change', filterData);
+    if (searchInput) searchInput.addEventListener('input', filterData);
+    if (bookFilter) bookFilter.addEventListener('change', filterData);
 
-    // ปุ่มสุ่มมาตรา
-    btnRandom.addEventListener('click', () => {
-        const selectedBook = bookFilter.value;
-        const currentPool = selectedBook 
-            ? window.lawData.filter(item => item.book === selectedBook)
-            : window.lawData;
+    if (btnRandom) {
+        btnRandom.addEventListener('click', () => {
+            const selectedBook = bookFilter.value;
+            const currentPool = selectedBook 
+                ? window.lawData.filter(item => item.book === selectedBook)
+                : window.lawData;
 
-        if (currentPool.length > 0) {
-            const randomIndex = Math.floor(Math.random() * currentPool.length);
-            renderLaws([currentPool[randomIndex]]);
-        }
-    });
+            if (currentPool.length > 0) {
+                const randomIndex = Math.floor(Math.random() * currentPool.length);
+                renderLaws([currentPool[randomIndex]]);
+            }
+        });
+    }
 
-    // ปุ่มล้างการค้นหา
-    btnClear.addEventListener('click', () => {
-        searchInput.value = '';
-        bookFilter.value = '';
-        renderLaws(window.lawData);
-    });
+    if (btnClear) {
+        btnClear.addEventListener('click', () => {
+            searchInput.value = '';
+            bookFilter.value = '';
+            renderLaws(window.lawData);
+        });
+    }
 
-    // เรียกเริ่มการทำงาน
     init();
 });
