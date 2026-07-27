@@ -378,4 +378,4 @@ window.lawData = [
     elements: ""
   }
 ];
-];
+
