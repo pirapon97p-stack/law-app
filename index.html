@@ -21,7 +21,6 @@
             margin: 0 auto;
             text-align: center;
         }
-        /* เมนูหน้าแรกเลือกวิชา */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -37,6 +36,7 @@
             transition: all 0.2s ease;
             border: 2px solid transparent;
             text-align: center;
+            -webkit-tap-highlight-color: transparent;
         }
         .category-card:active {
             transform: scale(0.98);
@@ -55,8 +55,6 @@
         .category-icon {
             font-size: 2.5rem;
         }
-
-        /* ส่วนของหน้าค้นหาและเนื้อหา */
         .header-bar {
             display: flex;
             align-items: center;
@@ -147,22 +145,22 @@
             <p style="color: #64748b;">กรุณาเลือกหมวดหมู่กฎหมายที่ต้องการศึกษา</p>
             
             <div class="category-grid">
-                <div class="category-card" onclick="selectCategory('อาญา')">
+                <div class="category-card" data-category="อาญา">
                     <div class="category-icon">📕</div>
                     <h3>กฎหมายอาญา</h3>
                     <p>ประมวลกฎหมายอาญา</p>
                 </div>
-                <div class="category-card" onclick="selectCategory('วิ.อาญา')">
+                <div class="category-card" data-category="วิ.อาญา">
                     <div class="category-icon">📙</div>
                     <h3>วิธีพิจารณาความอาญา</h3>
                     <p>ประมวลกฎหมายวิธีพิจารณาความอาญา</p>
                 </div>
-                <div class="category-card" onclick="selectCategory('แพ่ง')">
+                <div class="category-card" data-category="แพ่ง">
                     <div class="category-icon">📘</div>
                     <h3>กฎหมายแพ่งและพาณิชย์</h3>
                     <p>ประมวลกฎหมายแพ่งและพาณิชย์</p>
                 </div>
-                <div class="category-card" onclick="selectCategory('วิ.แพ่ง')">
+                <div class="category-card" data-category="วิ.แพ่ง">
                     <div class="category-icon">📗</div>
                     <h3>วิธีพิจารณาความแพ่งและพาณิชย์</h3>
                     <p>ประมวลกฎหมายวิธีพิจารณาความแพ่ง</p>
@@ -170,10 +168,10 @@
             </div>
         </div>
 
-        <!-- หน้าที่ 2: หน้าค้นหาและแสดงผลเนื้อหา (จะซ่อนอยู่ก่อน) -->
+        <!-- หน้าที่ 2: หน้าเนื้อหา -->
         <div id="app-screen" style="display: none;">
             <div class="header-bar">
-                <button class="btn-back" onclick="showCategoryScreen()">⬅️ เปลี่ยนวิชา</button>
+                <button class="btn-back" id="btnBack">⬅️ เปลี่ยนวิชา</button>
                 <h3 id="currentLawTitle" style="margin: 0; color: #1e3a8a;">ประมวลกฎหมาย</h3>
             </div>
 
@@ -199,7 +197,6 @@
 
     </div>
 
-    <!-- ไฟล์ข้อมูลกฎหมาย (สามารถนำไฟล์กฎหมายวิชาอื่นมาสคริปต์เพิ่มตรงนี้ได้ในอนาคต) -->
     <script src="lawData.js"></script>
     <script src="script.js"></script>
 </body>
